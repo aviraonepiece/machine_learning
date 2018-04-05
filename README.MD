@@ -8,6 +8,9 @@
 
 but！！对于大三的我来说训练数据采集是一件比较难的事情，模型对数据的要求很高，所以直接用现有高质量的数据集做练习，顺便开启了我的机器学习启蒙之路。现在将demo晒出来，点开跳转到对应子项目的介绍。我还是机器学习初学者，有错误的地方欢迎指正。
 
+自己的一点思考：**目前机器学习引擎还是辅助，还是需要规则库这样的东西结合，才能实现真正的态势感知、主动防火墙。这是当今防护产品的主流思路。两者最劳神的就是正则表达式规则撰写、和机器学习数据清洗与打标。强化学习目前在安全行业还是比较看好的，我也相信强化学习在IPS、waf对抗方面将来会取得成就**
+
 - [基于KDDCUP 99数据集预测DDoS攻击](https://github.com/aviraonepiece/machine_learning/tree/master/DDoS%E6%A3%80%E6%B5%8B)
 
 - [基于MasqueradeDat的用户异常行为检测](https://github.com/aviraonepiece/machine_learning/tree/master/%E7%94%A8%E6%88%B7%E5%BC%82%E5%B8%B8%E8%A1%8C%E4%B8%BA%E6%A3%80%E6%B5%8B)
+
