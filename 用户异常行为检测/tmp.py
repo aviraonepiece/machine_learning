@@ -12,49 +12,13 @@ import numpy as np
 from nltk.probability import FreqDist
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
-
-from sklearn.metrics import classification_report
-from sklearn import cross_validation
-from sklearn import datasets
 from sklearn import svm
-from sklearn.externals import  joblib
+from sklearn.metrics import classification_report
 from sklearn import metrics
 
 #测试样本数
 N=120
 
-"""
-def load_alexa(filename):
-    domain_list=[]
-    csv_reader = csv.reader(open(filename))
-    for row in csv_reader:
-        domain=row[1]
-        if domain >= MIN_LEN:
-            domain_list.append(domain)
-    return domain_list
-def domain2ver(domain):
-    ver=[]
-    for i in range(0,len(domain)):
-        ver.append([ord(domain[i])])
-    return ver
-    #domain_list=load_alexa("../data/top-1m.csv")
-    domain_list = load_alexa("../data/top-1000.csv")
-    #remodel=train_hmm(domain_list)
-    remodel=joblib.load(FILE_MODEL)
-    x_3,y_3=test_dga(remodel, "../data/dga-post-tovar-goz-1000.txt")
-    x_2,y_2=test_dga(remodel,"../data/dga-cryptolocke-1000.txt")
-    x_1,y_1=test_alexa(remodel, "../data/test-top-1000.csv")
-    #test_alexa(remodel, "../data/top-1000.csv")
-    #%matplotlib inline
-    fig,ax=plt.subplots()
-    ax.set_xlabel('Domain Length')
-    ax.set_ylabel('HMM Score')
-    ax.scatter(x_3,y_3,color='b',label="dga_post-tovar-goz")
-    ax.scatter(x_2, y_2, color='g', label="dga_cryptolock")
-    #ax.scatter(x_1, y_1, color='r', label="alexa")
-    ax.legend(loc='right')
-    plt.show()
-"""
 
 def load_user_cmd(filename):
     cmd_list=[]
@@ -84,8 +48,8 @@ def get_user_cmd_feature(user_cmd_list,dist_max,dist_min):
     for cmd_block in user_cmd_list:
         f1=len(set(cmd_block))
         fdist = list(FreqDist(cmd_block).keys())
-        f2=fdist[0:50]
-        f3=fdist[-50:]
+        f2=fdist[0:10]
+        f3=fdist[-10:]
         f2 = len(set(f2) & set(dist_max))
         f3=len(set(f3)&set(dist_min))
         x=[f1,f2,f3]
@@ -101,7 +65,7 @@ def get_label(filename,index=0):
     return x
 
 if __name__ == '__main__':
-    user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("User47")
+    user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("User3")
     user_cmd_feature=get_user_cmd_feature(user_cmd_list,user_cmd_dist_max,user_cmd_dist_min)
     labels=get_label("label.txt",2)
     y=[0]*50+labels
@@ -112,12 +76,13 @@ if __name__ == '__main__':
     x_test=user_cmd_feature[N:150]
     y_test=y[N:150]
 
+    svmclf=svm.SVC(kernel='linear',C=1)
+    svmclf.fit(x_train, y_train)
+    y_predict=svmclf.predict(x_test)
+
     #neigh = KNeighborsClassifier(n_neighbors=3)
     #neigh.fit(x_train, y_train)
-    #y_predict=neigh.predict(x_test)
-    
-    clf=svm.SVC(kernel='linear',C=1).fit(x_train, y_train)
-    y_predict=clf.predict(x_test)
+   # y_predict=neigh.predict(x_test)
 
     score=np.mean(y_test==y_predict)*100
     print(score)
