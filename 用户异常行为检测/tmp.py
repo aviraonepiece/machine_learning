@@ -65,9 +65,9 @@ def get_label(filename,index=0):
     return x
 
 if __name__ == '__main__':
-    user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("User3")
+    user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("./MasqueradeDat/User3")
     user_cmd_feature=get_user_cmd_feature(user_cmd_list,user_cmd_dist_max,user_cmd_dist_min)
-    labels=get_label("label.txt",2)
+    labels=get_label("./MasqueradeDat/label.txt",2)
     y=[0]*50+labels
 
     x_train=user_cmd_feature[0:N]

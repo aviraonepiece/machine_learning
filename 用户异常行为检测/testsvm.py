@@ -131,4 +131,4 @@ if __name__ == '__main__':
 
     score=np.mean(y_test==y_predict_nb)*100
     print ("NB %d" % score)
-    print(model_selection.cross_val_score(svmclf,user_cmd_feature,y,n_jobs=-1,cv=10))
+    #print(model_selection.cross_val_score(svmclf,user_cmd_feature,y,n_jobs=-1,cv=10))
