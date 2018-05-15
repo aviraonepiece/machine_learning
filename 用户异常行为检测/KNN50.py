@@ -3,15 +3,18 @@
 
 
 from sklearn.metrics import classification_report
-
+import sys
 import numpy as np
 import nltk
 
 from sklearn.neighbors import KNeighborsClassifier
 
 import pandas as pd
+from sklearn import svm
+from sklearn.naive_bayes import GaussianNB
+from sklearn import model_selection
 
-#训练集的样本操作序列数为N，包含前50个正常的，从前往后数；测试集的样本数为150-N（从后往前数），
+#训练集的样本操作序列数为N(从前往后数)，包含前50个正常的；测试集的样本数为150-N（从后往前数），共150个操作序列
 N=100
 
 
@@ -72,40 +75,73 @@ def get_label(filename,index=0):
 
         for line in f:
             line=line.strip('\n')#去掉换行符,否则会打印多一个回车
-            x.append( int(line.split()[index]))#index为标记，第3个用户的标记是line[2]，从0开始
+            x.append( int(line.split()[index]))#index为标记，第3个用户的标记是line[用户异常行为检测]，从0开始
 
     return x  #x为竖列对应的标记
 
 if __name__ == '__main__':
-    user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("./MasqueradeDat/User9")
-    #此时最频繁的命令已经被统计，放入特征提取
-    user_cmd_feature=get_user_cmd_feature(user_cmd_list,user_cmd_dist_max,user_cmd_dist_min)
-    #此时得到了特征集，共三个数值
-    labels=get_label("./MasqueradeDat/label.txt",8)
-    #此时得到了样本标签，是一个竖列标记
-    y=[0]*50+labels #在lables[100]这个list从前插入50个0，意味着前面的50个操作序列是正常的，凑成完整的操作序列
+    arg=sys.argv
+    try:
+        if len(arg)==2  and  0<int(arg[1])<51:
+
+            usernum=int(arg[1])
+            user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("D:/ml/用户异常行为检测/MasqueradeDat/User%s" % (usernum))#"./MasqueradeDat/User9"
+            #此时最频繁的命令已经被统计，放入特征提取（数据清洗）
+            user_cmd_feature=get_user_cmd_feature(user_cmd_list,user_cmd_dist_max,user_cmd_dist_min)
+            #此时得到了特征集，共三个数值（特征提取）
+            labels=get_label("D:/ml/用户异常行为检测/MasqueradeDat/label.txt",usernum-1)
+            #此时得到了样本标签，是一个竖列标记
+            y=[0]*50+labels #在lables[100]这个list从前插入50个0，意味着前面的50个操作序列是正常的，凑成完整的操作序列
 
 
-    x_train=user_cmd_feature[0:N]   #被划分的样本特征集，训练集（命令数，与统计重合的最频繁命令数，最不频繁的命令数）（150个取N个，含50个正常）
-    y_train=y[0:N]                  #被划分的样本标签 ，训练集(150个取N个，含50个正常）
+            x_train=user_cmd_feature[0:N]   #被划分的样本特征集，训练集（命令数，与统计重合的最频繁命令数，最不频繁的命令数）（150个取N个，含50个正常）
+            y_train=y[0:N]                  #被划分的样本标签 ，训练集(150个取N个，含50个正常）
 
-    x_test=user_cmd_feature[N:150]  #测试集，样本特征集取后50个
-    y_test=y[N:150]                 #测试集，样本标签取后50个
+            x_test=user_cmd_feature[N:150]  #测试集，样本特征集取后50个
+            y_test=y[N:150]                 #测试集，样本标签取后50个
 
-    neigh = KNeighborsClassifier(n_neighbors=6,algorithm='auto') #k值经过调整，设为6，方法自动选择，原来有三个方法
-    neigh.fit(x_train, y_train)
-    y_predict=neigh.predict(x_test)  #根据模型对测试集进行一个预测
+            #KNN
+            neigh = KNeighborsClassifier(n_neighbors=6,algorithm='auto') #k值经过调整，设为6，方法自动选择，原来有三个方法
+            neigh.fit(x_train, y_train)
+            y_predict=neigh.predict(x_test)  #根据模型对测试集进行一个预测
+            score=np.mean(y_test==y_predict)*100  #将预测的标记和已有的特征标记做对比，取均值
+            print ('User%s实际的后50个特征标签是（0为正常）:' % (usernum),y_test)
+            print ('   KNN预测的后50个特征标签是（0为正常）:',y_predict.tolist())
+            print ('KNN异常操作预测的准确率是：',score)
+            target_name = ['正常', '异常']
+            print (classification_report(y_test, y_predict,target_names=target_name))
 
-    score=np.mean(y_test==y_predict)*100  #将预测的标记和已有的特征标记做对比，取均值
+            print(model_selection.cross_val_score(neigh, user_cmd_feature, y, n_jobs=-1, cv=10))
+            y_predict_knn10=model_selection.cross_val_predict(neigh, user_cmd_feature, y, n_jobs=-1, cv=10)
+            score = np.mean(y_test == y_predict_knn10[-50:]) * 100
+            # 将预测的标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
+            print('用户User%s实际的后50个特征标签是（0为正常）:' % (usernum), y_test)
+            print('十折交叉验证的后50个特征标签是（0为正常）:', y_predict_knn10[-50:].tolist())#同样取后50个测试集
+            print('KNN的十折交叉异常操作预测的准确率是：', score)
 
 
-    print ('本用户实际的后50个特征标签是（0为正常）:',y_test)
+            # #SVM
+            # clfsvm = svm.SVC(kernel='linear', C=1).fit(x_train, y_train)
+            # y_predict_svm = neigh.predict(x_test)  # 根据模型对测试集进行一个预测
+            # score = np.mean(y_test == y_predict_svm) * 100  # 将预测的标记和已有的特征标记做对比，取均值
+            # print('SVM实际的后50个特征标签是（0为正常）:', y_test)
+            # print('SVM预测的后50个特征标签是（0为正常）:', y_predict_svm.tolist())
+            # print('SVM异常操作预测的准确率是：', score)
+            # target_name = ['正常', '异常']
+            # print(classification_report(y_test, y_predict_svm, target_names=target_name))
+            #
+            #
+            # #NB
+            # clfnb = GaussianNB().fit(x_train, y_train)
+            # y_predict_nb = clfnb.predict(x_test)
+            # score = np.mean(y_test == y_predict_nb) * 100  # 将预测的标记和已有的特征标记做对比，取均值
+            # print('NB实际的后50个特征标签是（0为正常）:', y_test)
+            # print('NB预测的后50个特征标签是（0为正常）:', y_predict_nb.tolist())
+            # print('NB异常操作预测的准确率是：', score)
+            # target_name = ['正常', '异常']
+            # print(classification_report(y_test, y_predict_nb, target_names=target_name))
 
-    print ('本用户预测的后50个特征标签是（0为正常）:',y_predict.tolist())
-    print ('本用户异常操作预测的准确率是：',score)
-
-    target_name = ['正常', '异常']
-    print (classification_report(y_test, y_predict,target_names=target_name))
-
+    except:
+        print('Usage:python %s Usernumber（0-50）' % (arg[0]))
 
 
