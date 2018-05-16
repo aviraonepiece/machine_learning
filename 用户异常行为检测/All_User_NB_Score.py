@@ -1,21 +1,18 @@
 # -*- coding:utf-8 -*-
 
-import sys
-
-import re
 
 import numpy as np
 from sklearn.metrics import classification_report
 import sys
-import nltk
-import csv
-import matplotlib.pyplot as plt
+
 from nltk.probability import FreqDist
-from sklearn.feature_extraction.text import CountVectorizer
+
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 from sklearn import model_selection
+import warnings
+warnings.filterwarnings("ignore")
 
 ##训练集的样本操作序列数为N(从前往后数)，包含前50个正常的；测试集的样本数为150-N（从后往前数），共150个操作序列
 N=100
@@ -63,13 +60,11 @@ def get_label(filename,index=0):
     return x
 
 if __name__ == '__main__':
-    arg = sys.argv
-    try:
-        if len(arg) >= 2 and 0 < int(arg[1]) < 51:  # 51代表是50个用户
 
-            usernum = int(arg[1])
+    for usernum in range(1,51):
+
             user_cmd_list,dist=load_user_cmd_all("D:/ml/用户异常行为检测/MasqueradeDat/User%s" % (usernum))#dist为去重后的序列
-            print  ("该用户的去重向量表Dist:(%s)" % dist)
+           # print  ("该用户的去重向量表Dist:(%s)" % dist)
             user_cmd_feature=get_user_cmd_feature_all(user_cmd_list, dist)#150个向量，每个向量有len（dist）个分量，1或0表示
 
             labels=get_label("D:/ml/用户异常行为检测/MasqueradeDat/label.txt",usernum-1)
@@ -88,32 +83,19 @@ if __name__ == '__main__':
             score=np.mean(y_test==y_predict)*100
 
 
-            print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
-            print('   NB预测的后50个操作序列特征标签是(0为正常):', y_predict.tolist())
-            print('NB异常操作预测的准确率是：', score)
+           # print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
+           # print('   NB预测的后50个操作序列特征标签是(0为正常):', y_predict.tolist())
+            print('User %s NB异常操作的预测准确率是：' %(usernum), score)
             target_name = ['正常', '异常']
-            print(classification_report(y_test, y_predict, target_names=target_name))
-            print( model_selection.cross_val_score(clf, user_cmd_feature, y, n_jobs=-1,cv=10))
+           # print(classification_report(y_test, y_predict, target_names=target_name))
+           # print( model_selection.cross_val_score(clf, user_cmd_feature, y, n_jobs=-1,cv=10))
 
 
             y_predict_nb10 = model_selection.cross_val_predict(clf, user_cmd_feature, y, n_jobs=-1, cv=10)
             score = np.mean(y_test == y_predict_nb10[-50:]) * 100
             # 将预测的标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
-            print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
-            print('十折交叉验证后50个操作序列特征标签是(0为正常):', y_predict_nb10[-50:].tolist())  # 同样取后50个测试集
-            print('KNN的十折交叉异常操作预测的准确率是：', score)
+            #print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
+            #print('十折交叉验证后50个操作序列特征标签是(0为正常):', y_predict_nb10[-50:].tolist())  # 同样取后50个测试集
+            print('User %s NB的十折交叉异常操作的预测准确率是：'%(usernum), score,'\n')
 
 
-            try:
-                if len(arg)==3 and 0<int(arg[2])<51:#51代表测试集有50个序列
-                    print('\n')
-                    bashlistnum = int(arg[2])-1
-                    print('用户User%s测试集的第%d个操作序列是:' %(usernum,bashlistnum+1),user_cmd_list[100+bashlistnum])
-                    print('该操作序列被NB预测的结果是:','0（正常，是该用户的操作）' if y_predict.tolist()[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-                    print('该操作序列被NB十折交叉预测的结果是:', '0（正常，是该用户的操作）' if y_predict_nb10[-50:].tolist()[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-                    print("该操作序列实际的结果是", '0（正常，是该用户的操作）' if y_test[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-            except:
-                print('Usage:python %s Usernumber（0-50） [BashListNumber(0-50)]' % (arg[0]))
-
-    except:
-        print('Usage:python %s Usernumber（0-50） [BashListNumber(0-50)]' % (arg[0]))

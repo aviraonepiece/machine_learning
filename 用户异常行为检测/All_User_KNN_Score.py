@@ -13,6 +13,8 @@ import pandas as pd
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
 from sklearn import model_selection
+import warnings
+warnings.filterwarnings("ignore")
 
 #训练集的样本操作序列数为N(从前往后数)，包含前50个正常的；测试集的样本数为150-N（从后往前数），共150个操作序列
 N=100
@@ -80,11 +82,9 @@ def get_label(filename,index=0):
     return x  #x为竖列对应的标记
 
 if __name__ == '__main__':
-    arg=sys.argv
-    try:
-        if len(arg)>=2  and  0<int(arg[1])<51:#51代表是50个用户
 
-            usernum=int(arg[1])
+    for usernum in range(1,51):
+
             user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("D:/ml/用户异常行为检测/MasqueradeDat/User%s" % (usernum))#"./MasqueradeDat/User9"
             #此时最频繁的命令已经被统计，放入特征提取（数据清洗）
             user_cmd_feature=get_user_cmd_feature(user_cmd_list,user_cmd_dist_max,user_cmd_dist_min)
@@ -104,39 +104,31 @@ if __name__ == '__main__':
             neigh = KNeighborsClassifier(n_neighbors=6,algorithm='auto') #k值经过调整，设为6，方法自动选择，原来有三个方法
             neigh.fit(x_train, y_train)
             y_predict=neigh.predict(x_test)  #根据模型对测试集进行一个预测
-            score=np.mean(y_test==y_predict)*100  #将预测的标记和已有的特征标记做对比，取均值
-            print ('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum),y_test)
-            print ('   KNN预测的后50个操作序列特征标签是(0为正常):',y_predict.tolist())
-            print ('KNN异常操作预测的准确率是：',score)
+            score=np.mean(y_test==y_predict)*100  #将的预测标记和已有的特征标记做对比，取均值
+           # print ('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum),y_test)
+            #print ('   KNN的预测后50个操作序列特征标签是(0为正常):',y_predict.tolist())
+            print ('User %s KNN异常操作的预测准确率是：'%(usernum),score)
             target_name = ['正常', '异常']
-            print (classification_report(y_test, y_predict,target_names=target_name))
+           # print (classification_report(y_test, y_predict,target_names=target_name))
 
-            print(model_selection.cross_val_score(neigh, user_cmd_feature, y, n_jobs=-1, cv=10))
+           # print(model_selection.cross_val_score(neigh, user_cmd_feature, y, n_jobs=-1, cv=10))
             y_predict_knn10=model_selection.cross_val_predict(neigh, user_cmd_feature, y, n_jobs=-1, cv=10)
             score = np.mean(y_test == y_predict_knn10[-50:]) * 100
-            # 将预测的标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
-            print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
-            print('十折交叉验证后50个操作序列特征标签是(0为正常):', y_predict_knn10[-50:].tolist())#同样取后50个测试集
-            print('KNN的十折交叉异常操作预测的准确率是：', score)
+            # 将的预测标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
+        #    print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
+         #   print('十折交叉验证后50个操作序列特征标签是(0为正常):', y_predict_knn10[-50:].tolist())#同样取后50个测试集
+            print('User %s KNN的十折交叉异常操作的预测准确率是：' %(usernum), score,'\n')
 
-            try:
-                if len(arg)==3 and 0<int(arg[2])<51:#51代表测试集有50个序列
-                    print('\n')
-                    bashlistnum = int(arg[2])-1
-                    print('用户User%s测试集的第%d个操作序列是:' %(usernum,bashlistnum+1),user_cmd_list[100+bashlistnum])
-                    print('该操作序列被KNN预测的结果是:','0（正常，是该用户的操作）' if y_predict.tolist()[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-                    print('该操作序列被KNN十折交叉预测的结果是:', '0（正常，是该用户的操作）' if y_predict_knn10[-50:].tolist()[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-                    print("该操作序列实际的结果是", '0（正常，是该用户的操作）' if y_test[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-            except:
-                print('Usage:python %s Usernumber（0-50） [BashListNumber(0-50)]' % (arg[0]))
+
+
 
             # #SVM
             # clfsvm = svm.SVC(kernel='linear', C=1).fit(x_train, y_train)
             # y_predict_svm = neigh.predict(x_test)  # 根据模型对测试集进行一个预测
-            # score = np.mean(y_test == y_predict_svm) * 100  # 将预测的标记和已有的特征标记做对比，取均值
+            # score = np.mean(y_test == y_predict_svm) * 100  # 将的预测标记和已有的特征标记做对比，取均值
             # print('SVM实际的后50个特征标签是（0为正常）:', y_test)
-            # print('SVM预测的后50个特征标签是（0为正常）:', y_predict_svm.tolist())
-            # print('SVM异常操作预测的准确率是：', score)
+            # print('SVM的预测后50个特征标签是（0为正常）:', y_predict_svm.tolist())
+            # print('SVM异常操作的预测准确率是：', score)
             # target_name = ['正常', '异常']
             # print(classification_report(y_test, y_predict_svm, target_names=target_name))
             #
@@ -144,14 +136,10 @@ if __name__ == '__main__':
             # #NB
             # clfnb = GaussianNB().fit(x_train, y_train)
             # y_predict_nb = clfnb.predict(x_test)
-            # score = np.mean(y_test == y_predict_nb) * 100  # 将预测的标记和已有的特征标记做对比，取均值
+            # score = np.mean(y_test == y_predict_nb) * 100  # 将的预测标记和已有的特征标记做对比，取均值
             # print('NB实际的后50个特征标签是（0为正常）:', y_test)
-            # print('NB预测的后50个特征标签是（0为正常）:', y_predict_nb.tolist())
-            # print('NB异常操作预测的准确率是：', score)
+            # print('NB的预测后50个特征标签是（0为正常）:', y_predict_nb.tolist())
+            # print('NB异常操作的预测准确率是：', score)
             # target_name = ['正常', '异常']
             # print(classification_report(y_test, y_predict_nb, target_names=target_name))
-
-    except:
-        print('Usage:python %s Usernumber（0-50） [BashListNumber(0-50)]' % (arg[0]))
-
 
