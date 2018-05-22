@@ -86,6 +86,7 @@ if __name__ == '__main__':
 
 
             print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
+
             print('   NB预测的后50个操作序列特征标签是(0为正常):', y_predict.tolist())
             print('NB异常操作的预测准确率是：', score)
             target_name = ['正常', '异常']

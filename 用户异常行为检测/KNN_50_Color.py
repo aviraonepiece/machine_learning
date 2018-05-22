@@ -82,11 +82,14 @@ def get_label(filename,index=0):
     return x  #x为竖列对应的标记
 
 if __name__ == '__main__':
-    arg=sys.argv
-    try:
-        if len(arg)>=2  and  0<int(arg[1])<51:#51代表是50个用户
+    arg = input("请输入用户编号和操作序列编号 (Usage: UserNumber BashListNumber)：");
 
-            usernum=int(arg[1])
+    arg = list(arg.split())
+
+    try:
+        if len(arg)>=1  and  0<int(arg[0])<51:#51代表是50个用户
+
+            usernum=int(arg[0])
             user_cmd_list,user_cmd_dist_max,user_cmd_dist_min=load_user_cmd("D:/ml/用户异常行为检测/MasqueradeDat/User%s" % (usernum))#"./MasqueradeDat/User9"
             #此时最频繁的命令已经被统计，放入特征提取（数据清洗）
             user_cmd_feature=get_user_cmd_feature(user_cmd_list,user_cmd_dist_max,user_cmd_dist_min)
@@ -107,28 +110,71 @@ if __name__ == '__main__':
             neigh.fit(x_train, y_train)
             y_predict=neigh.predict(x_test)  #根据模型对测试集进行一个预测
             score=np.mean(y_test==y_predict)*100  #将预测的标记和已有的特征标记做对比，取均值
-            print ('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum),y_test)
-            print ('   KNN预测的后50个操作序列特征标签是(0为正常):',y_predict.tolist())
-            print ('KNN异常操作的预测准确率是：',score)
-            target_name = ['正常', '异常']
-            print (classification_report(y_test, y_predict,target_names=target_name))
+            #print ('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum),y_test)
+            print()
 
-            print(model_selection.cross_val_score(neigh, user_cmd_feature, y, n_jobs=-1, cv=10))
+            print('模型算法：KNN近邻算法       特征提取：提取用户操作中最（不）频繁的操作')
+            print ('User%s的测试集里50个操作序列特征检测情况(\033[1;30;42m0 \033[0m为正常，代表是该用户操作 ; \033[1;30;41m1 \033[0m为异常，代表不是该用户操作):' % (usernum))
+            print()
+            print('操作序列的\033[1;30;0m实际值\033[0m(50个序列):  ', end='')
+            for i in range(0,50):
+                if y_test[i]==1:
+                    print('\033[1;30;41m1 \033[0m', end='')
+                else:
+                    print('\033[1;30;42m0 \033[0m', end='')
+            print()
+            print (' KNN算法的\033[1;30;0m预测值\033[0m(50个序列):  ',end='')
+            for i in range(0, 50):
+                if y_predict.tolist()[i] == 1:
+                    print('\033[1;30;41m1 \033[0m', end='')
+                else:
+                    print('\033[1;30;42m0 \033[0m', end='')
+            print()
+
+            print ('KNN异常操作的预测准确率是：\033[1;30;0m%s \033[0m '% (score))
+
+            #报告KNN的细节
+            # target_name = ['正常', '异常']
+            # print (classification_report(y_test, y_predict,target_names=target_name))
+
+            # print(model_selection.cross_val_score(neigh, user_cmd_feature, y, n_jobs=-1, cv=10))#十折交叉验证的细节
             y_predict_knn10=model_selection.cross_val_predict(neigh, user_cmd_feature, y, n_jobs=-1, cv=10)
             score = np.mean(y_test == y_predict_knn10[-50:]) * 100
             # 将预测的标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
-            print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
-            print('十折交叉验证后50个操作序列特征标签是(0为正常):', y_predict_knn10[-50:].tolist())#同样取后50个测试集
-            print('KNN的十折交叉异常操作的预测准确率是：', score)
+
+            print()
+            print()
+            print('模型算法：KNN近邻算法十折交叉验证       特征提取：提取用户操作中最（不）频繁的操作')
+            print(
+                'User%s的测试集里50个操作序列特征检测情况(\033[1;30;42m0 \033[0m为正常，代表是该用户操作 ; \033[1;30;41m1 \033[0m为异常，代表不是该用户操作):' % (
+                    usernum))
+            print()
+            print('  操作序列的\033[1;30;0m实际值\033[0m(50个序列):  ', end='')
+            #print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
+            for i in range(0,50):
+                if y_test[i]==1:
+                    print('\033[1;30;41m1 \033[0m', end='')
+                else:
+                    print('\033[1;30;42m0 \033[0m', end='')
+            print()
+            print ('KNN十折交叉的\033[1;30;0m预测值\033[0m(50个序列): ',end='')
+            for i in range(0, 50):
+                if y_predict_knn10[-50:].tolist()[i] == 1:
+                    print('\033[1;30;41m1 \033[0m', end='')
+                else:
+                    print('\033[1;30;42m0 \033[0m', end='')
+            print()
+            #print('十折交叉验证后50个操作序列特征标签是(0为正常):', y_predict_knn10[-50:].tolist())#同样取后50个测试集
+            print('KNN十折交叉验证的预测准确率是：\033[1;30;0m%s \033[0m ' % (score))
 
             try:
-                if len(arg)==3 and 0<int(arg[2])<51:#51代表测试集有50个序列
+                if len(arg)==2 and 0<int(arg[1])<51:#51代表测试集有50个序列
                     print('\n')
-                    bashlistnum = int(arg[2])-1
-                    print('用户User%s测试集的第%d个操作序列是:' %(usernum,bashlistnum+1),user_cmd_list[100+bashlistnum])
-                    print('该操作序列被KNN预测的结果是:','0（正常，是该用户的操作）' if y_predict.tolist()[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-                    print('该操作序列被KNN十折交叉预测的结果是:', '0（正常，是该用户的操作）' if y_predict_knn10[-50:].tolist()[bashlistnum]==0 else '1（异常，不是该用户的操作）')
-                    print("该操作序列实际的结果是", '0（正常，是该用户的操作）' if y_test[bashlistnum]==0 else '1（异常，不是该用户的操作）')
+                    bashlistnum = int(arg[1])-1
+                    print('\033[1;30;0m用户User%s测试集的第%d个操作序列是:\033[0m' %(usernum,bashlistnum+1),user_cmd_list[100+bashlistnum])
+                    print('\033[1;30;0m该操作序列被KNN预测的结果是:\033[0m','\033[1;30;42m0 \033[0m（正常，是该用户的操作）' if y_predict.tolist()[bashlistnum]==0 else '\033[1;30;41m1 \033[0m（异常，不是该用户的操作）')
+                    print('\033[1;30;0m该操作序列被KNN十折交叉预测的结果是:\033[0m', '\033[1;30;42m0 \033[0m（正常，是该用户的操作）' if y_predict_knn10[-50:].tolist()[bashlistnum]==0 else '\033[1;30;41m1 \033[0m（异常，不是该用户的操作）')
+                    print("\033[1;30;0m该操作序列实际的结果是\033[0m", '\033[1;30;42m0 \033[0m（正常，是该用户的操作）' if y_test[bashlistnum]==0 else '\033[1;30;41m1 \033[0m（异常，不是该用户的操作）')
             except:
                 print('Usage:python %s Usernumber（0-50） [BashListNumber(0-50)]' % (arg[0]))
 
