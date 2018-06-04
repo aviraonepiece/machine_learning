@@ -36,7 +36,7 @@ def load_user_cmd_all(filename):#加载操作序列文件函数
                 # print(cmd_list) 只有一个cmd_list，且里面有15000/100=150个x（操作序列）0-149
 
     fdist = list(FreqDist(dist).keys()) #dist由上面得出，包含15000个命令，这一步是去重
-    return cmd_list,fdist        #cmd_list有150个操作序列，fdist是去重后的命令集合
+    return cmd_list,fdist        #cmd_list有150个操作序列，fdist是去重后的命令集合,每个User的fdist不尽相同
 
 def get_user_cmd_feature_all(user_cmd_list, dist):#传入上面函数返回的两个值，user_cmd_list是150个操作序列，dist上同fdist
     user_cmd_feature=[]

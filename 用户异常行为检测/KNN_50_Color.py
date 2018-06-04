@@ -64,6 +64,8 @@ def get_user_cmd_feature(user_cmd_list,dist_max,dist_min):#user_cmd_list是150�
         f3 = sersort.index[0:10].tolist()  # 取出最不频繁的10个操作命令作为特征三
         f2 = sersort.index[-10:].tolist()  # 取出最频繁的10个操作命令作为特征二
 
+
+
         f2 = len(set(f2) & set(dist_max))   #和最频繁的50条命令计算重合个数
         f3=len(set(f3)&set(dist_min))       #和最不频繁的50条命令计算重合个数
         x=[f1,f2,f3]

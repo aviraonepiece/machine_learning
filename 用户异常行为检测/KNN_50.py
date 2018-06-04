@@ -48,8 +48,8 @@ def load_user_cmd(filename): #加载操作序列文件函数
     fdist = nltk.FreqDist(fist)#由于后面的要做特征重合度对比，个人认为统计正常操作习惯的最频繁最不频繁比较妥
     ser = pd.Series(fdist)
     sersort = ser.sort_values()  # 按照升序排列
-    dist_min = sersort.index[0:50].tolist()  # 取出频率最小的前50个操作命令
-    dist_max = sersort.index[-50:].tolist()  # 取出频率最大的最后50个操作命令
+    dist_min = sersort.index[0:50].tolist()  # 取出频率最小的（前50个）操作命令
+    dist_max = sersort.index[-50:].tolist()  # 取出频率最大的（最后50个）操作命令
     return cmd_list, dist_max, dist_min
 
 def get_user_cmd_feature(user_cmd_list,dist_max,dist_min):#user_cmd_list是150个操作序列，0-149
