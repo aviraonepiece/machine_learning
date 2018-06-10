@@ -44,6 +44,7 @@ def load_user_cmd(filename): #加载操作序列文件函数
 
 
 
+
     fist=dist[0:5000]  #dist里面由上面得出，包含15000个命令
     fdist = nltk.FreqDist(fist)#由于后面的要做特征重合度对比，个人认为统计正常操作习惯的最频繁最不频繁比较妥
     ser = pd.Series(fdist)
@@ -51,6 +52,10 @@ def load_user_cmd(filename): #加载操作序列文件函数
     dist_min = sersort.index[0:50].tolist()  # 取出频率最小的前50个操作命令
     dist_max = sersort.index[-50:].tolist()  # 取出频率最大的最后50个操作命令
     return cmd_list, dist_max, dist_min
+
+
+
+
 
 def get_user_cmd_feature(user_cmd_list,dist_max,dist_min):#user_cmd_list是150个操作序列，0-149
     user_cmd_feature=[]
@@ -108,7 +113,7 @@ if __name__ == '__main__':
             y_test=y[N:150]                 #测试集，样本标签取后50个
 
             #KNN
-            neigh = KNeighborsClassifier(n_neighbors=6,algorithm='auto') #k值经过调整，设为6，方法自动选择，原来有三个方法
+            neigh = KNeighborsClassifier(n_neighbors=6,algorithm='auto') #k值经过调整，设为6个邻居，方法自动选择，原来有三个方法
             neigh.fit(x_train, y_train)
             y_predict=neigh.predict(x_test)  #根据模型对测试集进行一个预测
             score=np.mean(y_test==y_predict)*100  #将预测的标记和已有的特征标记做对比，取均值
@@ -141,6 +146,8 @@ if __name__ == '__main__':
 
             # print(model_selection.cross_val_score(neigh, user_cmd_feature, y, n_jobs=-1, cv=10))#十折交叉验证的细节
             y_predict_knn10=model_selection.cross_val_predict(neigh, user_cmd_feature, y, n_jobs=-1, cv=10)
+            #cross_val_predict 返回的是estimator 的分类结果（或回归值），这个对于后期模型的改善很重要，
+            # 可以通过该预测输出对比实际目标值，准确定位到预测出错的地方，为我们参数优化及问题排查十分的重要。
             score = np.mean(y_test == y_predict_knn10[-50:]) * 100
             # 将预测的标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
 

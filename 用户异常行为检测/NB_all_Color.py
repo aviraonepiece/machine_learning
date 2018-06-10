@@ -88,19 +88,17 @@ if __name__ == '__main__':
 
             print()
             print('模型算法：NB朴素贝叶斯算法       特征提取：将用户的操作序列化为词集向量')
-            print(
-                'User%s的测试集里50个操作序列特征检测情况(\033[1;30;42m0 \033[0m为正常，代表是该用户操作 ; \033[1;30;41m1 \033[0m为异常，代表不是该用户操作):' % (
-                    usernum))
+            print('User%s的测试集里50个操作序列特征检测情况(\033[1;30;42m0 \033[0m为正常，代表是该用户操作 ; \033[1;30;41m1 \033[0m为异常，代表不是该用户操作):' % (usernum))
             print()
             print('操作序列的\033[1;30;0m实际值\033[0m(50个序列):  ', end='')
-            for i in range(0, 50):
+            for i in range(0, (150-N)):
                 if y_test[i] == 1:
                     print('\033[1;30;41m1 \033[0m', end='')
                 else:
                     print('\033[1;30;42m0 \033[0m', end='')
             print()
             print('  NB算法的\033[1;30;0m预测值\033[0m(50个序列):  ', end='')
-            for i in range(0, 50):
+            for i in range(0, (150-N)):
                 if y_predict.tolist()[i] == 1:
                     print('\033[1;30;41m1 \033[0m', end='')
                 else:
@@ -121,26 +119,26 @@ if __name__ == '__main__':
 
 
             y_predict_nb10 = model_selection.cross_val_predict(clf, user_cmd_feature, y, n_jobs=-1, cv=10)
-            score = np.mean(y_test == y_predict_nb10[-50:]) * 100
+            #   cross_val_predict 返回的是estimator 的分类结果（或回归值），这个对于后期模型的改善很重要，
+            # 可以通过该预测输出对比实际目标值，准确定位到预测出错的地方，为我们参数优化及问题排查十分的重要。
+            score = np.mean(y_test == y_predict_nb10[-(150-N):]) * 100
             # 将预测的标记和已有的特征标记做对比，取均值，这里取150个的后50个序列（测试集序列）
             print()
             print()
             print('模型算法：NB朴素贝叶斯算法十折交叉验证       特征提取：将用户的操作序列化为词集向量')
-            print(
-                'User%s的测试集里50个操作序列特征检测情况(\033[1;30;42m0 \033[0m为正常，代表是该用户操作 ; \033[1;30;41m1 \033[0m为异常，代表不是该用户操作):' % (
-                    usernum))
+            print( 'User%s的测试集里50个操作序列特征检测情况(\033[1;30;42m0 \033[0m为正常，代表是该用户操作 ; \033[1;30;41m1 \033[0m为异常，代表不是该用户操作):' % (usernum))
             print()
             print(' 操作序列的\033[1;30;0m实际值\033[0m(50个序列):  ', end='')
             # print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
-            for i in range(0, 50):
+            for i in range(0, (150-N)):
                 if y_test[i] == 1:
                     print('\033[1;30;41m1 \033[0m', end='')
                 else:
                     print('\033[1;30;42m0 \033[0m', end='')
             print()
             print('NB十折交叉的\033[1;30;0m预测值\033[0m(50个序列): ', end='')
-            for i in range(0, 50):
-                if y_predict_nb10[-50:].tolist()[i] == 1:
+            for i in range(0, (150-N)):
+                if y_predict_nb10[-(150-N):].tolist()[i] == 1:
                     print('\033[1;30;41m1 \033[0m', end='')
                 else:
                     print('\033[1;30;42m0 \033[0m', end='')

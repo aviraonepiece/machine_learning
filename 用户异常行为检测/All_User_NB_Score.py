@@ -86,7 +86,7 @@ if __name__ == '__main__':
            # print('User%s实际的后50个操作序列特征标签是(0为正常):' % (usernum), y_test)
            # print('   NB预测的后50个操作序列特征标签是(0为正常):', y_predict.tolist())
             print('User %s NB异常操作的预测准确率是：' %(usernum), score)
-            print('\033[1;34;msss\033[0m')
+
             target_name = ['正常', '异常']
            # print(classification_report(y_test, y_predict, target_names=target_name))
            # print( model_selection.cross_val_score(clf, user_cmd_feature, y, n_jobs=-1,cv=10))
